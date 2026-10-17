@@ -11,15 +11,27 @@ st.set_page_config(
 # Judul Utama
 st.markdown("<h1 style='text-align: center;'>【ALD1 MAMA 2026 VOTING ROUND 1】</h1>", unsafe_allow_html=True)
 
-# Masukkan URL Web App Google Apps Script Anda di sini (format JSON)
+# URL API Google Apps Script
 GAS_API_URL = "https://script.google.com/macros/s/AKfycbwUI3UPKZ669AWqI-Voyc6OVRglUGZiIegPx1CSbMg0ZfNK6vuB62AlzRuBn-Ox2GXDfA/exec"
 
 @st.cache_data(ttl=30) # Refresh data setiap 30 detik
 def fetch_data():
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     try:
-        res = requests.get(GAS_API_URL)
+        # Mengikuti redirect otomatis Google Apps Script dan mengirimkan User-Agent
+        res = requests.get(GAS_API_URL, headers=headers, allow_redirects=True, timeout=15)
+        
+        # Cek jika status HTTP bukan 200 OK
+        if res.status_code != 200:
+            st.error(f"HTTP Error Status: {res.status_code}")
+            return None
+            
         return res.json()
-    except:
+    except Exception as e:
+        # Tampilkan pesan error yang spesifik agar mudah di-debug
+        st.error(f"Detail Error: {str(e)}")
         return None
 
 data = fetch_data()
@@ -42,13 +54,18 @@ if data:
         for idx, collab in enumerate(collabs):
             with cols[idx]:
                 # Tampilkan Gambar & Nama Artis
-                st.image(collab.get('image'), width=120)
-                st.subheader(collab.get('name'))
+                if collab.get('image'):
+                    st.image(collab.get('image'), width=120)
+                st.subheader(collab.get('name', 'Collab'))
                 
                 # Progress Bar
-                progress_val = float(collab.get('progress', 0)) / 100.0
+                try:
+                    progress_val = float(collab.get('progress', 0)) / 100.0
+                except (ValueError, TypeError):
+                    progress_val = 0.0
+                    
                 st.progress(min(1.0, max(0.0, progress_val)))
-                st.caption(f"Progres: {collab.get('progress')}% | Target: {collab.get('target'):,}")
+                st.caption(f"Progres: {collab.get('progress', 0)}% | Target: {collab.get('target', 0):,}")
 
                 # Tabel Leaderboard User
                 users = collab.get('users', [])
@@ -65,4 +82,4 @@ if data:
                 else:
                     st.info("Belum ada data user.")
 else:
-    st.error("Gagal mengambil data dari Google Sheets. Pastikan URL API sudah benar.")
+    st.error("Gagal mengambil data dari Google Sheets. Periksa detail pesan di atas.")
