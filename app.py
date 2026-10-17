@@ -12,7 +12,7 @@ st.set_page_config(
 st.markdown("<h1 style='text-align: center;'>【ALD1 MAMA 2026 VOTING ROUND 1】</h1>", unsafe_allow_html=True)
 
 # Masukkan URL Web App Google Apps Script Anda di sini (format JSON)
-GAS_API_URL = "PASANG_LINK_WEB_APP_GOOGLE_SCRIPT_ANDA_DI_SINI"
+GAS_API_URL = "https://script.google.com/macros/s/AKfycbwUI3UPKZ669AWqI-Voyc6OVRglUGZiIegPx1CSbMg0ZfNK6vuB62AlzRuBn-Ox2GXDfA/exec"
 
 @st.cache_data(ttl=30) # Refresh data setiap 30 detik
 def fetch_data():
